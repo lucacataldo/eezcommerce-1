@@ -20,6 +20,48 @@
 	scroll-snap-type: y proximity;
 }
 
+.st1 {
+	stroke-dasharray: 20px;
+	transition: all 1s ease;
+	animation: logoAni 2s ease;
+	fill: none;
+	stroke: #43ba9e;
+	stroke-width: 3;
+	stroke-linecap: round;
+	stroke-miterlimit: 10;
+}
+
+.st2 {
+	stroke-dasharray: 40px;
+	transition: all 1s ease;
+	animation: logoAni 1.5s ease;
+	fill: none;
+	stroke: #43ba9e;
+	stroke-width: 3;
+	stroke-linecap: round;
+	stroke-miterlimit: 10;
+}
+
+.st12 {
+	animation-delay: 0.1s;
+	transition-delay: 0.1s;
+	transition-duration: 0.7s;
+}
+
+.logo:hover .st1 {
+	stroke-dashoffset: -40px;
+}
+
+.logo:hover .st2 {
+	stroke-dashoffset: 79px;
+}
+
+@keyframes logoAni {
+	100% {
+		stroke-dashoffset: -80px;
+	}
+}
+
 :root {
 	--bg: #fefefe;
 	--accent: #519e8a;
