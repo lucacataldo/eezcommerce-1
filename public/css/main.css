@@ -194,6 +194,11 @@ h1 {
 	color: var(--danger);
 }
 
+.dropzone {
+	border-radius: 10px;
+	border-style: dashed !important;
+}
+
 @media only screen and (max-width: 768px) {
 	.bigIcon {
 		font-size: 50vw;

@@ -5,10 +5,12 @@ $(() => {
 
 	// prevent submission of forms with this class until validated
 	$(".needs-validation").submit(e => {
+		let formdata = new FormData(e.target);
 		// get the form we're working with $() just wraps it in a jquery query so that we can use jquery functions
 		let form = $(e.target);
 		// stop form from submitting by default
 		e.preventDefault();
+		e.stopPropagation();
 
 		// tell the form that we've validated it manually so that bootstrap can do our styling
 		form.addClass("was-validated");
@@ -23,23 +25,24 @@ $(() => {
 		// the [0] after form is to access the raw DOM element since it was wrapped in jquery before (same result as just e.target)
 		// if the form is valid (so checkvalidity is true) we can do our posting of data (submit the form to the "action" attribute url)
 		if (form[0].checkValidity()) {
-			var loader = $(".loader-block");
-			loader.addClass("d-flex");
-			$.post(form.attr("action"), form.serialize(), data => {
-				// if theres an error, put it in the element with the class "server-response" and show that element
-				if (data.error) {
-					form.removeClass("was-validated");
-					//specific for seperate
-					$("#emailReset").addClass("is-invalid");
-					$("#productSKU").addClass("is-invalid");
-					form
-						.find(".server-response")
-						.html(data.error)
-						.addClass("d-block");
-					loader.removeClass("d-flex");
-				} else {
-					// the server will respond with a redirect url. if everything goes well, we should go there
-					window.location = data.redirectUrl;
+			$.post({
+				url: form.attr("action"),
+				data: formdata,
+				contentType: false,
+				processData: false,
+				success: function(data) {
+					// if theres an error, put it in the element with the class "server-response" and show that element
+					if (data.error) {
+						form.removeClass("was-validated");
+						$("#emailReset").addClass("is-invalid");
+						form
+							.find(".server-response")
+							.html(data.error)
+							.addClass("d-block");
+					} else {
+						// the server will respond with a redirect url. if everything goes well, we should go there
+						window.location = data.redirectUrl;
+					}
 				}
 			});
 		}

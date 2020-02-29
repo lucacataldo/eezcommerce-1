@@ -9,6 +9,8 @@ var bodyParser = require("body-parser");
 var exphbs = require("express-handlebars");
 var sass = require("sass");
 var hbHelpers = require("handlebars-helpers")();
+var path = require("path");
+var multer = require("multer");
 
 // custom modules
 const mailService = require("./modules/emailService.js");
@@ -17,6 +19,16 @@ const productService = require("./modules/productService.js");
 const orderService = require("./modules/orderService");
 
 // express middlewares & setup
+var productStorage = multer.diskStorage({
+	destination: function(req, file, cb) {
+		cb(null, "public/siteData/" + req.auth.userDetails._id + "/img");
+	},
+	filename: function(req, file, cb) {
+		cb(null, req.body.productSKU + path.extname(file.originalname));
+	}
+});
+
+var uploadProduct = new multer({ storage: productStorage });
 
 // Sets the express view engine to use handlebars (file endings in .hbs), registers helpers
 app.engine(
@@ -321,7 +333,7 @@ app.post("/login", (req, res) => {
 		});
 });
 
-app.post("/addProduct", (req, res) => {
+app.post("/addProduct", uploadProduct.single("file"), (req, res) => {
 	let prodName = req.body.productName;
 	let prodDesc = req.body.productDesc;
 	let prodQty = req.body.productInventory;

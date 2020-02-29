@@ -1,75 +1,107 @@
-	{{!-- This modal is only used to manually input data(it is not recommended!) --}}
-	<div class="modal fade" id="addProductModal" >
-			<div class="modal-dialog modal-dialog-centered">
-				<div class="modal-content">
-					<div class="modal-body">
-						<button type="button" class="close" data-dismiss="modal">
-							<span>&times;</span>
-						</button>
-						<h1>Add Product</h1>
+{{!-- This modal is only used to manually input data(it is not recommended!) --}}
+<div class="modal fade" id="addProductModal">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-body">
+				<button type="button" class="close" data-dismiss="modal">
+					<span>&times;</span>
+				</button>
+				<h1>Add Product</h1>
 
-						<form id="addProduct" class="needs-validation" novalidate action="/addProduct">
-						
-								<div class="form-group row">
-									<div class="col-sm-12">	
-									
-										<label for="productName">Product Name</label>
-									<input
-										name="productName"
-										class="form-control"
-										placeholder="Masks"
-										required
-									/>
-									</div>
-									
-									<div class="form-group row pl-3 pt-2 pr-3">		
-										<div class="col-sm-3">
-										<label for="productSKU">SKU</label>
-										<input
-										type="number"
-										min="1"
-										name="productSKU"
-										id="productSKU"
-										class="form-control"
-										placeholder= "0000"
-										required
-									/></div>
-										<div class="col-sm-3">
-										<label for="productInventory">Qty</label>
-										<input
-										type="number"
-										min="0"
-										name="productInventory"
-										class="form-control"
-										placeholder= "0"
-										required
-									/>
-									</div>
-									<div class="col-sm-6">
-										<label for="productPrice">Price</label>
-										<input
-										min= "0"
-										name="productPrice"
-										class="form-control"
-										placeholder= "0.00"
-										required
-									/>
-									</div>
-									</div>
-		
-										<div class="col-sm-12">
-											<label for="productDesc">Description</label>
-
-										<textarea name="productDesc" class="form-control" style="resize:none" maxlength="256" id="descriptionTextArea" rows="3"></textarea>
-											</div>
-										
-							</div>
-								<button id="submitBtn" class="btn badge-pill btn-outline-primary btn-sm float-right" type="submit">
-								Add
-							</button>
-						</form>
-					</div>
+				<div class="dropzone" id="the-dropzone">
 				</div>
+
+				<form id="addProduct" enctype="multipart/form-data" action="/addProduct">
+
+					<div class="form-group row">
+						<div class="col-sm-12">
+
+							<label for="productName">Product Name</label>
+							<input minlength="2" name="productName" class="form-control" placeholder="Masks" required />
+						</div>
+
+						<div class="form-group row pl-3 pt-2 pr-3">
+							<div class="col-sm-3">
+								<label for="productSKU">SKU</label>
+								<input type="number" min="1" max="9999" name="productSKU" id="productSKU"
+									class="form-control" placeholder="0000" required /></div>
+							<div class="col-sm-3">
+								<label for="productInventory">Qty</label>
+								<input type="number" min="0" name="productInventory" class="form-control"
+									placeholder="0" required />
+							</div>
+							<div class="col-sm-6">
+								<label for="productPrice">Price</label>
+								<input min="0" name="productPrice" class="form-control" placeholder="0.00" required />
+							</div>
+						</div>
+
+						<div class="col-sm-12">
+							<label for="productDesc">Description</label>
+
+							<textarea name="productDesc" class="form-control" style="resize:none" maxlength="256"
+								id="descriptionTextArea" rows="3"></textarea>
+						</div>
+					</div>
+
+					<div class="server-response text-danger text-center p-2"></div>
+					<button id="submitBtn" class="btn badge-pill btn-outline-primary btn-sm float-right" type="submit">
+						Add
+					</button>
+				</form>
 			</div>
 		</div>
+	</div>
+</div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.js"></script>
+
+<script>
+	Dropzone.autoDiscover = false;
+	var theDropzone = new Dropzone("#the-dropzone", {
+		paramName: "file",
+		url: "/addProduct",
+		autoProcessQueue: false, //we're gonna tell it to process when our form submits
+		addRemoveLinks: true
+	})
+
+	// new submit event
+	$("#addProduct").submit(e => {
+		e.preventDefault()
+		e.stopPropagation()
+		theDropzone.processQueue();
+	})
+
+
+	// when dropzone's form is just about to submit, add in our form data
+	theDropzone.on("sending", (file, xhr, formData) => {
+		let data = $("#addProduct").serializeArray();
+		let form = $("#addProduct");
+
+		for (i = 0; i < data.length; i++) {
+			formData.append(data[i].name, data[i].value);
+		}
+
+
+		$.post({
+			url: form.attr("action"),
+			data: formData,
+			contentType: false,
+			processData: false,
+			success: function (data) {
+				// if theres an error, put it in the element with the class "server-response" and show that element
+				if (data.error) {
+					form.removeClass("was-validated");
+					$("#emailReset").addClass("is-invalid");
+					form
+						.find(".server-response")
+						.html(data.error)
+						.addClass("d-block");
+				} else {
+					// the server will respond with a redirect url. if everything goes well, we should go there
+					window.location = data.redirectUrl;
+				}
+			}
+		})
+	})
+</script>
